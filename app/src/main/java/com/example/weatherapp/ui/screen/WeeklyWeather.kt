@@ -9,8 +9,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -38,64 +42,71 @@ fun DisplayWeeklyWeather(modifier: Modifier = Modifier) {
         WeatherType(
             dayOfTheWeek = "Monday",
             name = "Sunny",
-            temp = "26c",
-            resourceId = R.drawable.sunbaby
+            lowTemp = 15,
+            highTemp = 26,
+            humidity = 15,
+            windSpeed = 10,
+            resourceId = R.drawable.sun
         ),
         WeatherType(
             dayOfTheWeek = "Tuesday",
             name = "Rainy",
-            temp = "15c",
-            resourceId = R.drawable.raincloud
+            lowTemp = 10,
+            highTemp = 19,
+            humidity = 25,
+            windSpeed = 16,
+            resourceId = R.drawable.rain
         ),
         WeatherType(
             dayOfTheWeek = "Wednesday",
             name = "Cloudy",
-            temp = "18c",
+            lowTemp = 15,
+            highTemp = 23,
+            humidity = 98,
+            windSpeed = 20,
             resourceId = R.drawable.cloudy
         ),
         WeatherType(
             dayOfTheWeek = "Thursday",
             name = "Partly Cloudy",
-            temp = "20c",
+            lowTemp = 17,
+            highTemp = 28,
+            humidity = 76,
+            windSpeed = 17,
             resourceId = R.drawable.partlycloudy
         ),
         WeatherType(
             dayOfTheWeek = "Friday",
             name = "Rainy",
-            temp = "26c",
-            resourceId = R.drawable.raincloud
+            lowTemp = 13,
+            highTemp = 19,
+            humidity = 80,
+            windSpeed = 23,
+            resourceId = R.drawable.rain
         ),
         WeatherType(
             dayOfTheWeek = "Saturday",
             name = "Sunny",
-            temp = "26c",
-            resourceId = R.drawable.sunbaby
+            lowTemp = 20,
+            highTemp = 31,
+            humidity = 35,
+            windSpeed = 14,
+            resourceId = R.drawable.sun
         ),
         WeatherType(
             dayOfTheWeek = "Sunday",
             name = "Cloudy",
-            temp = "26c",
+            lowTemp = 15,
+            highTemp = 26,
+            humidity = 56,
+            windSpeed = 45,
             resourceId = R.drawable.cloudy
         ),
     )
-    var timeText by remember { mutableStateOf(dateTimeConverter()) }
-
-    LaunchedEffect(Unit) {
-        while(isActive){
-            timeText = dateTimeConverter();
-            val now = ZonedDateTime.now();
-            val secondsToNextMin  = 60 - now.second;
-            val millisToNextMin = (secondsToNextMin * 1_000L) - (now.nano/1_000_000L)
-            delay(millisToNextMin.milliseconds);
-        }
-    }
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxSize()
     ){
-        Text(
-            text = timeText,
-        )
         LazyColumn(
             modifier = Modifier
                 .weight(1f)
@@ -103,33 +114,42 @@ fun DisplayWeeklyWeather(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            items(weeklyWeatherList) { weather ->
+            itemsIndexed(weeklyWeatherList) {index, weather ->
                 Row(
-                    horizontalArrangement = Arrangement.spacedBy(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(
+                        16.dp,
+                        Alignment.CenterHorizontally
+                    ),
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 12.dp, horizontal = 16.dp)
                 ) {
-                    Box(
+                    Image(
+                        painter = painterResource(weather.resourceId),
+                        contentDescription = "Picture of ${weather.name} weather",
                         modifier = Modifier.size(100.dp),
-                        contentAlignment = Alignment.Center
-                    ){
-                        Image(
-                            painter = painterResource(weather.resourceId),
-                            contentDescription = "Picture of ${weather.name} weather",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Fit
-                        )
-                    }
+                        contentScale = ContentScale.FillBounds
+                    )
                     Column(
                         verticalArrangement = Arrangement.spacedBy(2.dp),
-                        horizontalAlignment = Alignment.Start
+                        horizontalAlignment = Alignment.Start,
+                        modifier = Modifier.width(160.dp)
                     ) {
-                        Text(weather.dayOfTheWeek)
+                        Text(
+                            text = weather.dayOfTheWeek,
+                            style = MaterialTheme.typography.headlineMedium
+                        )
                         Text(weather.name)
-                        Text(weather.temp)
+                        Text("${weather.lowTemp}c - ${weather.highTemp}c")
+                        Text("Humidity: ${weather.humidity}%")
+                        Text("Wind: ${weather.windSpeed}kmh")
                     }
+                    }
+                if (index < weeklyWeatherList.lastIndex) {
+                    HorizontalDivider(
+                        modifier = Modifier.padding(horizontal = 32.dp)
+                    )
                 }
             }
         }

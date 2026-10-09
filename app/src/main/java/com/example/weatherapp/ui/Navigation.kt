@@ -1,6 +1,7 @@
 package com.example.weatherapp.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -20,8 +21,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults.topAppBarColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -31,6 +34,11 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.weatherapp.ui.screen.DisplayDailyWeather
 import com.example.weatherapp.ui.screen.DisplayWeeklyWeather
+import com.example.weatherapp.util.dateTimeConverter
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
+import java.time.ZonedDateTime
+import kotlin.time.Duration.Companion.milliseconds
 
 // default set to 0
 @OptIn(ExperimentalMaterial3Api::class)
@@ -38,15 +46,31 @@ import com.example.weatherapp.ui.screen.DisplayWeeklyWeather
 fun TopAppBar(modifier: Modifier) {
     val navController = rememberNavController()
     var selectedIndex by remember { mutableIntStateOf(0) }
+    var timeText by remember { mutableStateOf(dateTimeConverter()) }
+    LaunchedEffect(Unit) {
+        while(isActive){
+            timeText = dateTimeConverter();
+            val now = ZonedDateTime.now();
+            val secondsToNextMin  = 60 - now.second;
+            val millisToNextMin = (secondsToNextMin * 1_000L) - (now.nano/1_000_000L)
+            delay(millisToNextMin.milliseconds);
+        }
+    }
     Scaffold(
         topBar = {
             TopAppBar(
                 colors = topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    titleContentColor = MaterialTheme.colorScheme.primary,
+                    titleContentColor = MaterialTheme.colorScheme.onSurface,
                 ),
                 title = {
-                    Text("Halifax, Nova Scotia")
+                    Column {
+                        Text("Halifax, Nova Scotia")
+                        Text(
+                            text = timeText,
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
                 }
             )
         },

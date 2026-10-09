@@ -5,7 +5,7 @@ import java.time.format.DateTimeFormatter
 
 fun dateTimeConverter(): String{
     val currentDateTime: ZonedDateTime = ZonedDateTime.now();
-    val formatter = DateTimeFormatter.ofPattern("EEEE, yyyy-MM-dd HH:mm z");
+    val formatter = DateTimeFormatter.ofPattern("EEEE, MMM dd HH:mm z");
     val formattedDateTime = currentDateTime.format(formatter);
     return formattedDateTime
 }

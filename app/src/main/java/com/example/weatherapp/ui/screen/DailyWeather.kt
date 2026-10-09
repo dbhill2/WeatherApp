@@ -4,7 +4,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -32,21 +34,13 @@ fun DisplayDailyWeather(modifier: Modifier = Modifier) {
         WeatherType(
             dayOfTheWeek = "EEEE",
             name = "Sunny",
-            temp = "26c",
-            resourceId = R.drawable.sunbaby
+            lowTemp = 15,
+            highTemp = 26,
+            humidity = 15,
+            windSpeed = 10,
+            resourceId = R.drawable.sun
         ),
     )
-    var timeText by remember { mutableStateOf(dateTimeConverter()) }
-
-    LaunchedEffect(Unit) {
-        while(isActive){
-            timeText = dateTimeConverter();
-            val now = ZonedDateTime.now();
-            val secondsToNextMin  = 60 - now.second;
-            val nanosToNextMin = (secondsToNextMin * 1_000L) - (now.nano/1_000_000L)
-            delay(nanosToNextMin.milliseconds);
-        }
-    }
     Column(
         verticalArrangement = Arrangement.SpaceEvenly,
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -74,11 +68,24 @@ fun DisplayDailyWeather(modifier: Modifier = Modifier) {
                             .size(200.dp),
                     )
                     Text(
-                        text = timeText,
+                        ("${ weather.name } ${weather.lowTemp}c - ${weather.highTemp}c")
                     )
-                    Text(
-                        weather.name + " " + weather.temp
-                    )
+                    Text("Humidity: ${weather.humidity}%, Windspeed: ${weather.windSpeed}kmh")
+                    if(weather.highTemp >= 20 && weather.name == "Sunny"){
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Column(
+                            verticalArrangement = Arrangement.SpaceEvenly,
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier
+                        ){
+                            Text("It's a perfect day for the beach!\nDon't forget your sunscreen!!")
+                            Image(
+                                painter = painterResource(R.drawable.sunblock),
+                                contentDescription = "Picture of sunblock",
+                                modifier = Modifier.size(50.dp)
+                            )
+                        }
+                    }
                 }
             }
         }
