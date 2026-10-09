@@ -18,7 +18,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             WeatherAppTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-//                    MainScreen(modifier = Modifier.padding(innerPadding))
                     TopAppBar(modifier = Modifier.padding(innerPadding))
                 }
             }

@@ -25,7 +25,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
 import com.example.weatherapp.R
 import com.example.weatherapp.models.WeatherType
+//import com.example.weatherapp.ui.component.WeatherTips
 import com.example.weatherapp.util.dateTimeConverter
+import kotlin.compareTo
 
 @Composable
 fun DisplayDailyWeather(modifier: Modifier = Modifier) {
@@ -78,13 +80,24 @@ fun DisplayDailyWeather(modifier: Modifier = Modifier) {
                             horizontalAlignment = Alignment.CenterHorizontally,
                             modifier = Modifier
                         ){
-                            Text("It's a perfect day for the beach!\nDon't forget your sunscreen!!")
+                            Text("It's a perfect day for the beach!\n\nDon't forget your sunscreen!!")
                             Image(
                                 painter = painterResource(R.drawable.sunblock),
                                 contentDescription = "Picture of sunblock",
                                 modifier = Modifier.size(50.dp)
                             )
                         }
+                    }
+                    if(weather.name == "Rainy"){
+
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        Text("Don't forget your umbrella!!")
+                        Image(
+                            painter = painterResource(R.drawable.umbrella),
+                            contentDescription = "Picture of an umbrella",
+                            modifier = Modifier.size(50.dp)
+                        )
                     }
                 }
             }
