@@ -34,13 +34,35 @@ import androidx.compose.ui.layout.ContentScale
 import com.example.weatherapp.R
 import com.example.weatherapp.models.WeatherType
 import com.example.weatherapp.util.dateTimeConverter
+import com.example.weatherapp.util.dayOfWeekConverter
 
 @Composable
 fun DisplayWeeklyWeather(modifier: Modifier = Modifier) {
 
+    var dayOfTheWeekText by remember { mutableStateOf(dayOfWeekConverter()) }
+    LaunchedEffect(Unit) {
+        while(isActive){
+            dayOfTheWeekText = dayOfWeekConverter();
+            val now = ZonedDateTime.now();
+            val secondsToNextMin  = 60 - now.second;
+            val millisToNextMin = (secondsToNextMin * 1_000L) - (now.nano/1_000_000L)
+            delay(millisToNextMin.milliseconds);
+        }
+    }
+
+    val weekArray = arrayOf(
+        "Monday",
+        "Tuesday",
+        "Wednesday",
+        "Thursday",
+        "Friday",
+        "Saturday",
+        "Sunday",
+        )
+
     val weeklyWeatherList = listOf(
         WeatherType(
-            dayOfTheWeek = "Monday",
+            dayOfTheWeek = weekArray[0],
             name = "Sunny",
             lowTemp = 15,
             highTemp = 26,
@@ -49,7 +71,7 @@ fun DisplayWeeklyWeather(modifier: Modifier = Modifier) {
             resourceId = R.drawable.sun
         ),
         WeatherType(
-            dayOfTheWeek = "Tuesday",
+            dayOfTheWeek = weekArray[1],
             name = "Rainy",
             lowTemp = 10,
             highTemp = 19,
@@ -58,7 +80,7 @@ fun DisplayWeeklyWeather(modifier: Modifier = Modifier) {
             resourceId = R.drawable.rain
         ),
         WeatherType(
-            dayOfTheWeek = "Wednesday",
+            dayOfTheWeek = weekArray[2],
             name = "Cloudy",
             lowTemp = 15,
             highTemp = 23,
@@ -67,7 +89,7 @@ fun DisplayWeeklyWeather(modifier: Modifier = Modifier) {
             resourceId = R.drawable.cloudy
         ),
         WeatherType(
-            dayOfTheWeek = "Thursday",
+            dayOfTheWeek = weekArray[3],
             name = "Partly Cloudy",
             lowTemp = 17,
             highTemp = 28,
@@ -76,7 +98,7 @@ fun DisplayWeeklyWeather(modifier: Modifier = Modifier) {
             resourceId = R.drawable.partlycloudy
         ),
         WeatherType(
-            dayOfTheWeek = "Friday",
+            dayOfTheWeek = weekArray[4],
             name = "Rainy",
             lowTemp = 13,
             highTemp = 19,
@@ -85,7 +107,7 @@ fun DisplayWeeklyWeather(modifier: Modifier = Modifier) {
             resourceId = R.drawable.rain
         ),
         WeatherType(
-            dayOfTheWeek = "Saturday",
+            dayOfTheWeek = weekArray[5],
             name = "Sunny",
             lowTemp = 20,
             highTemp = 31,
@@ -94,15 +116,21 @@ fun DisplayWeeklyWeather(modifier: Modifier = Modifier) {
             resourceId = R.drawable.sun
         ),
         WeatherType(
-            dayOfTheWeek = "Sunday",
+            dayOfTheWeek = weekArray[6],
             name = "Cloudy",
-            lowTemp = 15,
-            highTemp = 26,
+            lowTemp = 10,
+            highTemp = 24,
             humidity = 56,
             windSpeed = 45,
             resourceId = R.drawable.cloudy
         ),
     )
+    //STORES TODAY's DAY OF THE WEEK AND ITERATES FROM THAT IN THE LAZY COLUMN
+    val todayIndex = weeklyWeatherList
+        .indexOfFirst { it.dayOfTheWeek.equals(dayOfTheWeekText, ignoreCase = true) }
+        .coerceAtLeast(0) // fall back to the original order if there's no match
+
+    val orderedWeatherList = weeklyWeatherList.drop(todayIndex) + weeklyWeatherList.take(todayIndex)
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier.fillMaxSize()
@@ -114,7 +142,7 @@ fun DisplayWeeklyWeather(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            itemsIndexed(weeklyWeatherList) {index, weather ->
+            itemsIndexed(orderedWeatherList) {index, weather ->
                 Row(
                     horizontalArrangement = Arrangement.spacedBy(
                         16.dp,
@@ -146,7 +174,7 @@ fun DisplayWeeklyWeather(modifier: Modifier = Modifier) {
                         Text("Wind: ${weather.windSpeed}kmh")
                     }
                     }
-                if (index < weeklyWeatherList.lastIndex) {
+                if (index < orderedWeatherList.lastIndex) {
                     HorizontalDivider(
                         modifier = Modifier.padding(horizontal = 32.dp)
                     )

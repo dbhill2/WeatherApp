@@ -9,8 +9,8 @@ fun dateTimeConverter(): String{
     val formattedDateTime = currentDateTime.format(formatter);
     return formattedDateTime
 }
-//fun dayOfWeekConverter(): String {
-//    val currentDateTime = ZonedDateTime.now()
-//    val formatter = DateTimeFormatter.ofPattern("EEEE")
-//    return currentDateTime.format(formatter)
-//}
+fun dayOfWeekConverter(): String {
+    val currentDateTime = ZonedDateTime.now()
+    val formatter = DateTimeFormatter.ofPattern("EEEE")
+    return currentDateTime.format(formatter)
+}
