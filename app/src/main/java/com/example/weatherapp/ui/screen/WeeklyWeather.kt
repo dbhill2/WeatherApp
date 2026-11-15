@@ -1,185 +1,144 @@
 package com.example.weatherapp.ui.screen
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Air
+import androidx.compose.material.icons.filled.Opacity
+import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.isActive
-import java.time.ZonedDateTime
-import kotlin.time.Duration.Companion.milliseconds
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.layout.ContentScale
-import com.example.weatherapp.R
-import com.example.weatherapp.models.WeatherType
-import com.example.weatherapp.util.dateTimeConverter
-import com.example.weatherapp.util.dayOfWeekConverter
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.dp
+import coil3.compose.AsyncImage
+import com.example.weatherapp.MainViewModel
+import com.example.weatherapp.data.dao.ForecastDay
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.format.TextStyle
+import java.util.Locale
+import kotlin.math.roundToInt
 
 @Composable
-fun DisplayWeeklyWeather(modifier: Modifier = Modifier) {
+fun DisplayWeeklyWeather(modifier: Modifier = Modifier, viewModel: MainViewModel) {
+    val weather = viewModel.weather
 
-    var dayOfTheWeekText by remember { mutableStateOf(dayOfWeekConverter()) }
-    LaunchedEffect(Unit) {
-        while(isActive){
-            dayOfTheWeekText = dayOfWeekConverter();
-            val now = ZonedDateTime.now();
-            val secondsToNextMin  = 60 - now.second;
-            val millisToNextMin = (secondsToNextMin * 1_000L) - (now.nano/1_000_000L)
-            delay(millisToNextMin.milliseconds);
+    if (weather != null) {
+        LazyColumn(
+            modifier = modifier.fillMaxSize(),
+            contentPadding = PaddingValues(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            itemsIndexed(weather.forecast.forecastDays, key = { _, d -> d.date }) { index, forecastDay ->
+                DayCard(forecastDay = forecastDay, isToday = index == 0)
+            }
         }
     }
+}
 
-    val weekArray = arrayOf(
-        "Monday",
-        "Tuesday",
-        "Wednesday",
-        "Thursday",
-        "Friday",
-        "Saturday",
-        "Sunday",
-        )
+@Composable
+private fun DayCard(forecastDay: ForecastDay, isToday: Boolean) {
+    val day = forecastDay.day
+    val date = LocalDate.parse(forecastDay.date)
+    val dayName = if (isToday) "Today"
+    else date.dayOfWeek.getDisplayName(TextStyle.FULL, Locale.getDefault())
+    val dateText = date.format(DateTimeFormatter.ofPattern("MMM d", Locale.getDefault()))
 
-    val weeklyWeatherList = listOf(
-        WeatherType(
-            dayOfTheWeek = weekArray[0],
-            name = "Sunny",
-            lowTemp = 15,
-            highTemp = 26,
-            humidity = 15,
-            windSpeed = 10,
-            resourceId = R.drawable.sun
+    Card(
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainer
         ),
-        WeatherType(
-            dayOfTheWeek = weekArray[1],
-            name = "Rainy",
-            lowTemp = 10,
-            highTemp = 19,
-            humidity = 25,
-            windSpeed = 16,
-            resourceId = R.drawable.rain
-        ),
-        WeatherType(
-            dayOfTheWeek = weekArray[2],
-            name = "Cloudy",
-            lowTemp = 15,
-            highTemp = 23,
-            humidity = 98,
-            windSpeed = 20,
-            resourceId = R.drawable.cloudy
-        ),
-        WeatherType(
-            dayOfTheWeek = weekArray[3],
-            name = "Partly Cloudy",
-            lowTemp = 17,
-            highTemp = 28,
-            humidity = 76,
-            windSpeed = 17,
-            resourceId = R.drawable.partlycloudy
-        ),
-        WeatherType(
-            dayOfTheWeek = weekArray[4],
-            name = "Rainy",
-            lowTemp = 13,
-            highTemp = 19,
-            humidity = 80,
-            windSpeed = 23,
-            resourceId = R.drawable.rain
-        ),
-        WeatherType(
-            dayOfTheWeek = weekArray[5],
-            name = "Sunny",
-            lowTemp = 20,
-            highTemp = 31,
-            humidity = 35,
-            windSpeed = 14,
-            resourceId = R.drawable.sun
-        ),
-        WeatherType(
-            dayOfTheWeek = weekArray[6],
-            name = "Cloudy",
-            lowTemp = 10,
-            highTemp = 24,
-            humidity = 56,
-            windSpeed = 45,
-            resourceId = R.drawable.cloudy
-        ),
-    )
-    //STORES TODAY's DAY OF THE WEEK AND ITERATES FROM THAT IN THE LAZY COLUMN
-    val todayIndex = weeklyWeatherList
-        .indexOfFirst { it.dayOfTheWeek.equals(dayOfTheWeekText, ignoreCase = true) }
-        .coerceAtLeast(0) // fall back to the original order if there's no match
-
-    val orderedWeatherList = weeklyWeatherList.drop(todayIndex) + weeklyWeatherList.take(todayIndex)
-    Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        modifier = modifier.fillMaxSize()
-    ){
-        LazyColumn(
-            modifier = Modifier
-                .weight(1f)
-                .fillMaxWidth(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            itemsIndexed(orderedWeatherList) {index, weather ->
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(
-                        16.dp,
-                        Alignment.CenterHorizontally
-                    ),
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 12.dp, horizontal = 16.dp)
-                ) {
-                    Image(
-                        painter = painterResource(weather.resourceId),
-                        contentDescription = "Picture of ${weather.name} weather",
-                        modifier = Modifier.size(100.dp),
-                        contentScale = ContentScale.FillBounds
+            // Top: icon, day/condition, high/low
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                AsyncImage(
+                    model = "https:${day.condition.icon}",
+                    contentDescription = day.condition.weatherType,
+                    modifier = Modifier.size(64.dp)
+                )
+                Spacer(Modifier.width(12.dp))
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(dayName, style = MaterialTheme.typography.titleLarge)
+                    Text(
+                        "$dateText · ${day.condition.weatherType}",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(2.dp),
-                        horizontalAlignment = Alignment.Start,
-                        modifier = Modifier.width(160.dp)
-                    ) {
-                        Text(
-                            text = weather.dayOfTheWeek,
-                            style = MaterialTheme.typography.headlineMedium
-                        )
-                        Text(weather.name)
-                        Text("${weather.lowTemp}c - ${weather.highTemp}c")
-                        Text("Humidity: ${weather.humidity}%")
-                        Text("Wind: ${weather.windSpeed}kmh")
-                    }
-                    }
-                if (index < orderedWeatherList.lastIndex) {
-                    HorizontalDivider(
-                        modifier = Modifier.padding(horizontal = 32.dp)
+                }
+                Column(horizontalAlignment = Alignment.End) {
+                    Text(
+                        "${day.maxCel.roundToInt()}°",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                    Text(
+                        "${day.minCel.roundToInt()}°",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
+
+            HorizontalDivider()
+
+            // Bottom: rain, wind, humidity
+            Row(modifier = Modifier.fillMaxWidth()) {
+                Stat(
+                    icon = Icons.Filled.WaterDrop,
+                    value = "${day.dailyChanceOfRain.roundToInt()}%",
+                    label = "${day.totalPrecipMm} mm",
+                    modifier = Modifier.weight(1f)
+                )
+                Stat(
+                    icon = Icons.Filled.Air,
+                    value = "${day.maxWindKph.roundToInt()} km/h",
+                    label = "Max wind",
+                    modifier = Modifier.weight(1f)
+                )
+                Stat(
+                    icon = Icons.Filled.Opacity,
+                    value = "${day.avgHumidity.roundToInt()}%",
+                    label = "Humidity",
+                    modifier = Modifier.weight(1f)
+                )
+            }
         }
+    }
+}
+
+@Composable
+private fun Stat(icon: ImageVector, value: String, label: String, modifier: Modifier = Modifier) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+    ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
+        Text(value, style = MaterialTheme.typography.titleSmall)
+        Text(
+            label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
     }
 }
